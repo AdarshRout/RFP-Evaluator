@@ -4,13 +4,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: { DEFAULT: "#1A3A5C", light: "#1E4A73" },
-        brand: { DEFAULT: "#2B6CB0", light: "#3182CE", lighter: "#4299E1" },
-        surface: { DEFAULT: "#0D1117", card: "#161B22", border: "#21262D", hover: "#1C2128" },
-        muted: { DEFAULT: "#8B949E", light: "#B0BAC5" },
-        success: { DEFAULT: "#3FB950", muted: "#1A4731" },
+        navy: { DEFAULT: "#002B7F", light: "#003B99" },
+        brand: { DEFAULT: "#002B7F", light: "#00B2FE", lighter: "#5ce1e6" },
+        surface: { DEFAULT: "#000000", card: "#0a0a0a", border: "#262626", hover: "#141414" },
+        muted: { DEFAULT: "#E5E5E5", light: "#FFFFFF" },
+        success: { DEFAULT: "#76D600", muted: "#224000" },
         danger: { DEFAULT: "#F85149", muted: "#4A1010" },
         warning: { DEFAULT: "#D29922", muted: "#3D2A00" },
+        lime: { DEFAULT: "#76D600", light: "#8eff00" },
+        cyan: { DEFAULT: "#00B2FE", light: "#33c1ff" },
       },
       fontFamily: { sans: ["Inter", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "monospace"] },
       animation: {

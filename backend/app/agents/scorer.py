@@ -120,7 +120,7 @@ def score_requirements_agent(state: GraphState) -> GraphState:
             scores.append(ProposalScore(
                 requirement_id=req.id,
                 score=5.0,
-                justification="Unable to score automatically — manual review recommended.",
+                justification="Unable to score automatically - manual review recommended.",
                 evidence=evidence[:800],
             ))
 

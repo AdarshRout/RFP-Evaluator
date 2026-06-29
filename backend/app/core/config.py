@@ -6,13 +6,13 @@ class Settings(BaseSettings):
     groq_api_key: str
     # llama-3.1-8b-instant: 500K TPD vs llama-3.3-70b-versatile's 100K TPD
     groq_model: str = "llama-3.1-8b-instant"
-    # Scoring/extraction responses are short JSON — 1024 is plenty, saves ~75% tokens vs 4096
+    # Scoring/extraction responses are short JSON - 1024 is plenty, saves ~75% tokens vs 4096
     groq_max_tokens: int = 1024
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     hf_token: str | None = None
     chunk_size: int = 600
     chunk_overlap: int = 100
-    # Fetch 3 chunks per requirement instead of 4 — reduces scorer prompt size
+    # Fetch 3 chunks per requirement instead of 4 - reduces scorer prompt size
     retrieval_top_k: int = 3
     # Smaller RFP chunks → fewer requirements extracted → fewer LLM calls
     rfp_chunk_size: int = 4000

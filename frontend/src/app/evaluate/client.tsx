@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Home } from "lucide-react";
 import { EvaluationForm } from "@/components/evaluation/EvaluationForm";
 import { ResultsDashboard } from "@/components/evaluation/ResultsDashboard";
 import { useEvaluationStore } from "@/store/evaluation";
@@ -12,23 +12,13 @@ export function EvaluateClient() {
   return (
     <div className="min-h-screen flex flex-col">
       <nav className="border-b border-surface-border px-6 py-4 flex items-center gap-4 sticky top-0 bg-surface/95 backdrop-blur z-10">
-        <Link href="/" className="text-muted hover:text-white transition-colors p-1">
-          <ArrowLeft size={17} />
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-light text-white text-xs font-semibold shadow-sm transition-all"
+        >
+          <Home size={14} /> Home
         </Link>
-        <div className="w-px h-4 bg-surface-border" />
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-brand rounded-md flex items-center justify-center text-xs font-bold text-white">
-            AI
-          </div>
-          <span className="font-medium text-white text-sm">RFP Evaluator</span>
-        </div>
-        <div className="ml-2 flex items-center gap-1 text-xs text-muted">
-          <span>LangGraph</span>
-          <span className="text-surface-border mx-1">·</span>
-          <span>Groq</span>
-          <span className="text-surface-border mx-1">·</span>
-          <span>ChromaDB</span>
-        </div>
+        <div className="w-px h-4 bg-surface-border" />       
         <div className="ml-auto">
           {status === "running" && (
             <div className="flex items-center gap-2 text-xs text-brand">
@@ -49,7 +39,7 @@ export function EvaluateClient() {
         <div>
           <h1 className="text-2xl font-bold text-white">Evaluate Proposal</h1>
           <p className="text-muted text-sm mt-1">
-            Upload RFP and vendor proposal — the 4-agent pipeline extracts requirements, indexes the
+            Upload RFP and vendor proposal - the 4-agent pipeline extracts requirements, indexes the
             proposal semantically, scores via RAG, and generates a weighted report.
           </p>
         </div>
@@ -69,7 +59,7 @@ export function EvaluateClient() {
       </main>
 
       <footer className="border-t border-surface-border px-6 py-4 text-center text-muted text-xs">
-        Built for Deloitte T&T EAID — AI Engineer · Zero cost infrastructure
+        Bult by AI by an AI Engineer
       </footer>
     </div>
   );

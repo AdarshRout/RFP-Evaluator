@@ -6,7 +6,7 @@ import { useEvaluationStore } from "@/store/evaluation";
 
 export function EvaluationForm() {
   const [mode, setMode] = useState<"file" | "text">("file");
-  const [vendorName, setVendorName] = useState("Acme Corp Solutions");
+  const [vendorName, setVendorName] = useState("");
   
   // File inputs
   const [rfpFile, setRfpFile] = useState<File | null>(null);
@@ -250,14 +250,14 @@ export function EvaluationForm() {
             type="button"
             onClick={startSampleEvaluation}
             disabled={isRunning}
-            className="btn-ghost flex items-center gap-2 px-5 py-2.5 text-sm font-semibold border-brand/30 text-brand-light hover:bg-brand/10 w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg bg-navy hover:bg-navy-light text-white transition-all w-full sm:w-auto justify-center border border-brand-light/30"
           >
-            <Zap size={16} /> Evaluate with Sample Data
+            <Zap size={16} className="text-cyan-light" /> Evaluate with Sample Data
           </button>
           <button
             type="submit"
             disabled={isRunning}
-            className="btn-primary flex items-center gap-2 px-6 py-2.5 text-sm font-semibold shadow-lg shadow-brand/20 w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg bg-cyan hover:bg-cyan-light text-black font-bold shadow-lg transition-all w-full sm:w-auto justify-center"
           >
             {isRunning ? (
               <>

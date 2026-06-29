@@ -91,21 +91,30 @@ def export_pdf(report: EvaluationReport) -> bytes:
         elements.append(Spacer(1, 0.3*cm))
 
     elements.append(Paragraph("Requirement-Level Breakdown", h2_style))
-    req_data = [["Req ID", "Score", "Justification"]]
+    table_cell_style = ParagraphStyle("TableCell", parent=styles["Normal"], fontSize=9, leading=12)
+    table_hdr_style = ParagraphStyle("TableHdr", parent=styles["Normal"], fontSize=9, leading=12, textColor=colors.white, fontName="Helvetica-Bold")
+
+    req_data = [[
+        Paragraph("Req ID", table_hdr_style),
+        Paragraph("Score", table_hdr_style),
+        Paragraph("Justification", table_hdr_style)
+    ]]
     for ps in report.requirement_scores:
-        req_data.append([ps.requirement_id, f"{ps.score:.1f}", ps.justification[:120]])
-    req_table = Table(req_data, colWidths=[2.5*cm, 2*cm, 13.5*cm])
+        req_data.append([
+            Paragraph(ps.requirement_id, table_cell_style),
+            Paragraph(f"{ps.score:.1f}", table_cell_style),
+            Paragraph(ps.justification, table_cell_style)
+        ])
+    req_table = Table(req_data, colWidths=[2.5*cm, 2*cm, 12.5*cm])
     req_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), navy),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, light]),
         ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#DDDDDD")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, light]),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("WORDWRAP", (0, 0), (-1, -1), True),
     ]))
     elements.append(req_table)
 

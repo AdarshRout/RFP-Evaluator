@@ -50,7 +50,7 @@ def generate_report_agent(state: GraphState) -> GraphState:
 
     cat_str = "\n".join(f"  {k}: {v}/10" for k, v in category_scores.items())
     req_str = "\n".join(
-        f"  [{ps.requirement_id}] {ps.score:.1f}/10 — {ps.justification[:100]}"
+        f"  [{ps.requirement_id}] {ps.score:.1f}/10 - {ps.justification[:100]}"
         for ps in state.requirement_scores[:12]
     )
 

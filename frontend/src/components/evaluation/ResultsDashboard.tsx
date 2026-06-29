@@ -34,8 +34,8 @@ const getScoreColor = (score: number) => {
 };
 
 const getBarColor = (score: number) => {
-  if (score >= 8.0) return "#22c55e";
-  if (score >= 6.0) return "#f59e0b";
+  if (score >= 8.0) return "#76D600";
+  if (score >= 6.0) return "#00B2FE";
   return "#ef4444";
 };
 
@@ -241,8 +241,8 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
                     <Radar
                       name="Score"
                       dataKey="score"
-                      stroke="#4f8ef7"
-                      fill="#4f8ef7"
+                      stroke="#00B2FE"
+                      fill="#00B2FE"
                       fillOpacity={0.25}
                       strokeWidth={2}
                     />

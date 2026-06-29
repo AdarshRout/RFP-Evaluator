@@ -56,7 +56,7 @@ REQ-M3: Quarterly system health reviews and optimization recommendations.
 
 SAMPLE_PROPOSAL = """
 PROPOSAL RESPONSE
-TechSolutions Global Inc. — Cloud ERP Implementation Proposal
+TechSolutions Global Inc. - Cloud ERP Implementation Proposal
 Response to RFP-2024-ERP-001
 Submitted: November 15, 2024
 

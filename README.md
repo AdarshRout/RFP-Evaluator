@@ -1,4 +1,4 @@
-# RFP Evaluator — Enterprise Agentic AI Platform
+# RFP Evaluator - Enterprise Agentic AI Platform
 
 **Stack:** Next.js 15 · FastAPI · LangGraph · LangChain · Groq (Llama 3.3-70B) · ChromaDB · sentence-transformers  
 **Deployment:** Vercel (frontend) + Hugging Face Spaces (backend) · **$0 total cost**
@@ -33,7 +33,7 @@
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env — set GROQ_API_KEY=gsk_your_key_here
+# Edit .env - set GROQ_API_KEY=gsk_your_key_here
 
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 7860
@@ -45,7 +45,7 @@ uvicorn app.main:app --reload --port 7860
 ```bash
 cd frontend
 cp .env.example .env.local
-# Edit .env.local — set NEXT_PUBLIC_API_URL=http://localhost:7860
+# Edit .env.local - set NEXT_PUBLIC_API_URL=http://localhost:7860
 
 npm install
 npm run dev
@@ -73,7 +73,7 @@ npm run dev
 
 ## Deploy Frontend → Vercel (Free)
 
-**Option A — Vercel CLI:**
+**Option A - Vercel CLI:**
 ```bash
 cd frontend
 npx vercel
@@ -81,7 +81,7 @@ npx vercel
 # NEXT_PUBLIC_API_URL = https://YOUR_USERNAME-rfp-evaluator-api.hf.space
 ```
 
-**Option B — GitHub import:**
+**Option B - GitHub import:**
 1. Push `frontend/` to a GitHub repo
 2. Go to [vercel.com](https://vercel.com) → **Add New Project** → import repo
 3. Root directory: `frontend`
@@ -152,7 +152,7 @@ rfp-platform/
 | Decision | Choice | Why |
 |----------|--------|-----|
 | LLM | Groq Llama 3.3-70B | Free, fastest inference (LPU), no card required |
-| Structured output | `with_structured_output()` | Zero fragile JSON parsing — Pydantic schema enforced |
+| Structured output | `with_structured_output()` | Zero fragile JSON parsing - Pydantic schema enforced |
 | RFP extraction | Hierarchical chunking | Handles 40+ page docs; per-section extraction |
 | Vector store | ChromaDB ephemeral | Zero config, session-isolated, no server needed |
 | Streaming | LangGraph `astream()` + SSE | Real-time step progress to frontend |

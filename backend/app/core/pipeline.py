@@ -61,7 +61,7 @@ async def stream_evaluation(rfp_text: str, proposal_text: str, vendor_name: str)
             "current_step": node_name,
         }
 
-        # Run synchronous LLM-heavy agent in a thread pool — never blocks the event loop
+        # Run synchronous LLM-heavy agent in a thread pool - never blocks the event loop
         state = await _run_agent_in_thread(agent_fn, state)
 
         yield {
