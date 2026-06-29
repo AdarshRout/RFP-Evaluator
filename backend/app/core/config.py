@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
     groq_max_tokens: int = 4096
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    hf_token: str | None = None
     chunk_size: int = 600
     chunk_overlap: int = 100
     retrieval_top_k: int = 4

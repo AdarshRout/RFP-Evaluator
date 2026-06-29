@@ -18,8 +18,11 @@ def get_llm(temperature: float = 0.0) -> ChatGroq:
 @lru_cache
 def get_embeddings() -> HuggingFaceEmbeddings:
     s = get_settings()
-    return HuggingFaceEmbeddings(
-        model_name=s.embedding_model,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
+    kwargs = {
+        "model_name": s.embedding_model,
+        "model_kwargs": {"device": "cpu"},
+        "encode_kwargs": {"normalize_embeddings": True},
+    }
+    if s.hf_token:
+        kwargs["model_kwargs"]["token"] = s.hf_token
+    return HuggingFaceEmbeddings(**kwargs)

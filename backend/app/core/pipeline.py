@@ -1,4 +1,5 @@
-from functools import lru_cache
+import asyncio
+from functools import lru_cache, partial
 from typing import AsyncGenerator
 from langgraph.graph import StateGraph, START, END
 from app.schemas.models import GraphState
@@ -27,8 +28,13 @@ def get_graph():
     return _build_graph()
 
 
+async def _run_agent_in_thread(agent_fn, state: GraphState) -> GraphState:
+    """Run a synchronous agent function in a thread pool to avoid blocking the asyncio event loop."""
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, agent_fn, state)
+
+
 async def stream_evaluation(rfp_text: str, proposal_text: str, vendor_name: str) -> AsyncGenerator[dict, None]:
-    graph = get_graph()
     initial = GraphState(rfp_text=rfp_text, proposal_text=proposal_text, vendor_name=vendor_name)
 
     step_labels = {
@@ -38,18 +44,34 @@ async def stream_evaluation(rfp_text: str, proposal_text: str, vendor_name: str)
         "generate_report": "Generating evaluation report",
     }
 
-    async for event in graph.astream(initial.model_dump(), stream_mode="updates"):
-        for node_name, node_state in event.items():
-            if node_name == "__end__":
-                continue
-            state = GraphState(**node_state) if isinstance(node_state, dict) else node_state
-            yield {
-                "event": "step_complete",
-                "step": node_name,
-                "label": step_labels.get(node_name, node_name),
-                "message": state.messages[-1] if state.messages else "",
-                "current_step": state.current_step,
-                "report": state.report.model_dump() if state.report else None,
-            }
+    steps = [
+        ("extract_requirements", extract_requirements_agent),
+        ("index_proposal", index_proposal_agent),
+        ("score_requirements", score_requirements_agent),
+        ("generate_report", generate_report_agent),
+    ]
 
-    yield {"event": "done"}
+    state = initial
+    for node_name, agent_fn in steps:
+        yield {
+            "event": "status",
+            "step": node_name,
+            "label": step_labels[node_name],
+            "message": f"Starting: {step_labels[node_name]}...",
+            "current_step": node_name,
+        }
+
+        # Run synchronous LLM-heavy agent in a thread pool — never blocks the event loop
+        state = await _run_agent_in_thread(agent_fn, state)
+
+        yield {
+            "event": "step_complete" if node_name != "generate_report" else "report",
+            "step": node_name,
+            "label": step_labels[node_name],
+            "message": state.messages[-1] if state.messages else "",
+            "current_step": state.current_step,
+            "data": state.report.model_dump() if state.report else None,
+        }
+
+    yield {"event": "complete", "message": "Evaluation complete"}
+

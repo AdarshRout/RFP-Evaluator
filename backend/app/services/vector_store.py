@@ -1,6 +1,6 @@
 import chromadb
-from langchain_community.vectorstores import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.core.providers import get_embeddings
 from app.core.config import get_settings
 

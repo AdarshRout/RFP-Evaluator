@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse, Response
 from app.core.pipeline import stream_evaluation
 from app.services.export_service import export_pdf, export_docx, export_xlsx
 from app.utils.document_parser import parse_bytes
+from app.utils.sample_data import SAMPLE_RFP, SAMPLE_PROPOSAL
 from app.schemas.models import EvaluationReport
 
 router = APIRouter(prefix="/evaluate", tags=["evaluation"])
@@ -44,6 +45,30 @@ async def evaluate_text(
 ):
     async def event_generator():
         async for event in stream_evaluation(rfp_text, proposal_text, vendor_name):
+            yield f"data: {json.dumps(event)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.get("/sample-data")
+async def get_sample_data():
+    return {
+        "rfp_text": SAMPLE_RFP.strip(),
+        "proposal_text": SAMPLE_PROPOSAL.strip(),
+        "vendor_name": "TechSolutions Global Inc.",
+    }
+
+
+@router.post("/sample")
+async def evaluate_sample():
+    vendor_name = "TechSolutions Global Inc."
+
+    async def event_generator():
+        async for event in stream_evaluation(SAMPLE_RFP, SAMPLE_PROPOSAL, vendor_name):
             yield f"data: {json.dumps(event)}\n\n"
 
     return StreamingResponse(

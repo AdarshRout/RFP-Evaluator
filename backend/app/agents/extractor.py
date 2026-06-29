@@ -1,5 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.core.providers import get_llm
 from app.core.config import get_settings
 from app.schemas.models import GraphState, Requirement, ExtractionOutput

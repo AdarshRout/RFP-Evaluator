@@ -8,6 +8,7 @@ langchain-community
 langchain-huggingface
 langgraph
 chromadb
+langchain-chroma
 sentence-transformers
 pypdf
 python-docx
