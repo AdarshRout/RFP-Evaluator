@@ -89,7 +89,7 @@ def score_requirements_agent(state: GraphState) -> GraphState:
             description=req.description,
             category=req.category,
             mandatory=req.mandatory,
-            evidence=evidence[:2000],
+            evidence=evidence[:800],  # 800 chars is enough for accurate scoring; 2000 wastes ~1200 tokens per call
         )
 
         # Strategy 1: Try with_structured_output (uses tool calling under the hood)
@@ -121,7 +121,7 @@ def score_requirements_agent(state: GraphState) -> GraphState:
                 requirement_id=req.id,
                 score=5.0,
                 justification="Unable to score automatically — manual review recommended.",
-                evidence=evidence[:150],
+                evidence=evidence[:800],
             ))
 
     return GraphState(

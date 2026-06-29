@@ -36,12 +36,15 @@ def extract_requirements_agent(state: GraphState) -> GraphState:
     seen_ids: set[str] = set()
 
     for section in sections:
+        # Stop processing more sections once we hit the cap
+        if len(all_requirements) >= settings.max_requirements:
+            break
         try:
             result: ExtractionOutput = structured_llm.invoke(
                 _PROMPT.format_messages(section=section, offset=f"REQ-{len(all_requirements)+1:03d}")
             )
             for req in result.requirements:
-                if req.id not in seen_ids:
+                if req.id not in seen_ids and len(all_requirements) < settings.max_requirements:
                     seen_ids.add(req.id)
                     all_requirements.append(req)
         except Exception:
@@ -54,7 +57,7 @@ def extract_requirements_agent(state: GraphState) -> GraphState:
         **{**state.model_dump(),
            "requirements": all_requirements,
            "current_step": "requirements_extracted",
-           "messages": [f"Extracted {len(all_requirements)} requirements across {len(sections)} sections"]}
+           "messages": [f"Extracted {len(all_requirements)} requirements across {len(sections)} sections (cap: {settings.max_requirements})"]}
     )
 
 
