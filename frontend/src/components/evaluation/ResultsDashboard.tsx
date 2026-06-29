@@ -2,7 +2,22 @@
 
 import { useState } from "react";
 import { EvaluationReport } from "@/types/evaluation";
-import { Award, CheckCircle, AlertTriangle, FileSpreadsheet, FileText, Download, Check, X } from "lucide-react";
+import { Award, CheckCircle, AlertTriangle, FileSpreadsheet, FileText, Download } from "lucide-react";
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 
 interface ResultsDashboardProps {
   report: EvaluationReport;
@@ -10,6 +25,34 @@ interface ResultsDashboardProps {
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7860/api/v1";
 const API_BASE_URL = rawApiUrl.endsWith("/api/v1") ? rawApiUrl : `${rawApiUrl.replace(/\/$/, "")}/api/v1`;
+
+/* ── helpers ── */
+const getScoreColor = (score: number) => {
+  if (score >= 8.0) return "text-success bg-success/10 border-success/20";
+  if (score >= 6.0) return "text-warning bg-warning/10 border-warning/20";
+  return "text-danger bg-danger/10 border-danger/20";
+};
+
+const getBarColor = (score: number) => {
+  if (score >= 8.0) return "#22c55e";
+  if (score >= 6.0) return "#f59e0b";
+  return "#ef4444";
+};
+
+const fmtScore = (score: number) => `${(score * 10).toFixed(1)}%`;
+
+/* ── custom tooltip ── */
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-surface-card border border-surface-border rounded-lg px-3 py-2 text-xs shadow-xl">
+        <p className="text-muted font-semibold mb-1">{label}</p>
+        <p className="text-white font-bold">{Number(payload[0].value).toFixed(1)} / 10</p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export function ResultsDashboard({ report }: ResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<"summary" | "analysis" | "requirements">("summary");
@@ -42,18 +85,25 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
     }
   };
 
-  // scores from backend are 0-10
-  const getScoreColor = (score: number) => {
-    if (score >= 8.0) return "text-success bg-success/10 border-success/20";
-    if (score >= 6.0) return "text-warning bg-warning/10 border-warning/20";
-    return "text-danger bg-danger/10 border-danger/20";
-  };
+  /* ── chart data ── */
+  const radarData = Object.entries(report.category_scores).map(([subject, score]) => ({
+    subject,
+    score: Number(score.toFixed(2)),
+    fullMark: 10,
+  }));
 
-  const fmtScore = (score: number) => `${(score * 10).toFixed(1)}%`;
+  const barData = report.requirement_scores.map((item) => {
+    const meta = report.requirements_meta?.find((m) => m.id === item.requirement_id);
+    return {
+      id: item.requirement_id,
+      score: Number(item.score.toFixed(2)),
+      category: meta?.category ?? "General",
+    };
+  });
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Top Banner Summary Card */}
+      {/* ── Top Banner ── */}
       <div className="card p-6 bg-gradient-to-r from-surface-card to-surface border-brand/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -85,7 +135,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
           </div>
         </div>
 
-        {/* Category breakdown progress mini-bars */}
+        {/* Category mini-bars */}
         <div className="mt-6 pt-6 border-t border-surface-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Object.entries(report.category_scores).map(([category, score]) => (
             <div key={category} className="bg-surface-card p-3 rounded-lg border border-surface-border">
@@ -104,7 +154,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
         </div>
       </div>
 
-      {/* Export & Navigation Bar */}
+      {/* ── Export & Navigation Bar ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-3">
         <div className="flex gap-2 border-b sm:border-b-0 border-surface-border pb-2 sm:pb-0">
           <button
@@ -125,7 +175,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
                 : "text-muted hover:text-white"
             }`}
           >
-            Strengths & Gaps ({report.strengths.length + report.gaps.length})
+            Strengths &amp; Gaps ({report.strengths.length + report.gaps.length})
           </button>
           <button
             onClick={() => setActiveTab("requirements")}
@@ -164,9 +214,82 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
         </div>
       </div>
 
-      {/* Tab Contents */}
+      {/* ── Tab: Executive Summary ── */}
       {activeTab === "summary" && (
         <div className="space-y-6 animate-fade-in">
+          {/* Charts row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Radar – category coverage */}
+            <div className="card p-6">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-4">
+                Category Coverage
+              </h3>
+              {radarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                    <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                    <PolarAngleAxis
+                      dataKey="subject"
+                      tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 600 }}
+                    />
+                    <PolarRadiusAxis
+                      angle={30}
+                      domain={[0, 10]}
+                      tick={{ fill: "#64748b", fontSize: 9 }}
+                      tickCount={5}
+                    />
+                    <Radar
+                      name="Score"
+                      dataKey="score"
+                      stroke="#4f8ef7"
+                      fill="#4f8ef7"
+                      fillOpacity={0.25}
+                      strokeWidth={2}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[280px] flex items-center justify-center text-muted text-sm">No category data</div>
+              )}
+            </div>
+
+            {/* Bar – per-requirement scores */}
+            <div className="card p-6">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-4">
+                Per-Requirement Scores
+              </h3>
+              {barData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={barData} margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis
+                      dataKey="id"
+                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                      axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={[0, 10]}
+                      tick={{ fill: "#64748b", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                    <Bar dataKey="score" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                      {barData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={getBarColor(entry.score)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[280px] flex items-center justify-center text-muted text-sm">No requirement data</div>
+              )}
+            </div>
+          </div>
+
+          {/* Summary text */}
           <div className="card p-6">
             <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-3">Executive Summary</h3>
             <p className="text-sm text-muted-light leading-relaxed whitespace-pre-line">
@@ -181,9 +304,9 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
         </div>
       )}
 
+      {/* ── Tab: Strengths & Gaps ── */}
       {activeTab === "analysis" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-          {/* Strengths */}
           <div className="card p-6 border-success/30 bg-success/5 space-y-4">
             <div className="flex items-center gap-2 text-success font-bold text-sm uppercase tracking-wider">
               <CheckCircle size={18} /> Identified Strengths ({report.strengths.length})
@@ -198,10 +321,9 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
             </ul>
           </div>
 
-          {/* Gaps */}
           <div className="card p-6 border-danger/30 bg-danger/5 space-y-4">
             <div className="flex items-center gap-2 text-danger font-bold text-sm uppercase tracking-wider">
-              <AlertTriangle size={18} /> Key Gaps & Concerns ({report.gaps.length})
+              <AlertTriangle size={18} /> Key Gaps &amp; Concerns ({report.gaps.length})
             </div>
             <ul className="space-y-2.5">
               {report.gaps.map((gap, idx) => (
@@ -215,6 +337,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
         </div>
       )}
 
+      {/* ── Tab: Detailed Requirements ── */}
       {activeTab === "requirements" && (
         <div className="card overflow-hidden animate-fade-in">
           <div className="overflow-x-auto">
@@ -248,7 +371,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
                       <td className="py-3 px-4 align-top text-muted-light font-mono text-[11px] max-w-md leading-relaxed bg-surface/30">
                         {item.evidence ? (
                           <p className="line-clamp-3 hover:line-clamp-none transition-all cursor-pointer">
-                            "{item.evidence}"
+                            &ldquo;{item.evidence}&rdquo;
                           </p>
                         ) : (
                           <span className="text-muted italic">No specific evidence retrieved</span>
