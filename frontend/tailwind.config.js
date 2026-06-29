@@ -5,14 +5,14 @@ module.exports = {
     extend: {
       colors: {
         navy: { DEFAULT: "#002B7F", light: "#003B99" },
-        brand: { DEFAULT: "#002B7F", light: "#00B2FE", lighter: "#5ce1e6" },
+        brand: { DEFAULT: "#92d400", light: "#a3df24", lighter: "#b5ea48" },
         surface: { DEFAULT: "#000000", card: "#0a0a0a", border: "#262626", hover: "#141414" },
         muted: { DEFAULT: "#E5E5E5", light: "#FFFFFF" },
-        success: { DEFAULT: "#76D600", muted: "#224000" },
+        success: { DEFAULT: "#92d400", muted: "#1e3300" },
         danger: { DEFAULT: "#F85149", muted: "#4A1010" },
         warning: { DEFAULT: "#D29922", muted: "#3D2A00" },
-        lime: { DEFAULT: "#76D600", light: "#8eff00" },
-        cyan: { DEFAULT: "#00B2FE", light: "#33c1ff" },
+        lime: { DEFAULT: "#92d400", light: "#a3df24" },
+        cyan: { DEFAULT: "#0055ff", light: "#3377ff" },
       },
       fontFamily: { sans: ["Inter", "system-ui", "sans-serif"], mono: ["JetBrains Mono", "monospace"] },
       animation: {

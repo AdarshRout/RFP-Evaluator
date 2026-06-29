@@ -161,7 +161,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
             onClick={() => setActiveTab("summary")}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
               activeTab === "summary"
-                ? "bg-brand text-white shadow-sm"
+                ? "bg-[#92d400] text-black font-bold shadow-sm"
                 : "text-muted hover:text-white"
             }`}
           >
@@ -171,7 +171,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
             onClick={() => setActiveTab("analysis")}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
               activeTab === "analysis"
-                ? "bg-brand text-white shadow-sm"
+                ? "bg-[#92d400] text-black font-bold shadow-sm"
                 : "text-muted hover:text-white"
             }`}
           >
@@ -181,7 +181,7 @@ export function ResultsDashboard({ report }: ResultsDashboardProps) {
             onClick={() => setActiveTab("requirements")}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
               activeTab === "requirements"
-                ? "bg-brand text-white shadow-sm"
+                ? "bg-[#92d400] text-black font-bold shadow-sm"
                 : "text-muted hover:text-white"
             }`}
           >

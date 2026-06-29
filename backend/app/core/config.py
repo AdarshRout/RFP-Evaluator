@@ -4,7 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     groq_api_key: str
-    # llama-3.1-8b-instant: 500K TPD vs llama-3.3-70b-versatile's 100K TPD
+    # llama-3.1-8b-instant: 500K TPD 
     groq_model: str = "llama-3.1-8b-instant"
     # Scoring/extraction responses are short JSON - 1024 is plenty, saves ~75% tokens vs 4096
     groq_max_tokens: int = 1024

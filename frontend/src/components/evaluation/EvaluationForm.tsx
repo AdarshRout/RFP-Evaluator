@@ -74,7 +74,7 @@ export function EvaluationForm() {
             disabled={isRunning}
             className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
               mode === "file"
-                ? "bg-brand text-white shadow-sm"
+                ? "bg-[#92d400] text-black font-bold shadow-sm"
                 : "text-muted hover:text-white"
             }`}
           >
@@ -86,7 +86,7 @@ export function EvaluationForm() {
             disabled={isRunning}
             className={`flex items-center gap-2 px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
               mode === "text"
-                ? "bg-brand text-white shadow-sm"
+                ? "bg-[#92d400] text-black font-bold shadow-sm"
                 : "text-muted hover:text-white"
             }`}
           >
@@ -250,22 +250,22 @@ export function EvaluationForm() {
             type="button"
             onClick={startSampleEvaluation}
             disabled={isRunning}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg bg-navy hover:bg-navy-light text-white transition-all w-full sm:w-auto justify-center border border-brand-light/30"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg bg-[#92d400] hover:bg-[#83be00] text-black transition-all w-full sm:w-auto justify-center shadow-md"
           >
-            <Zap size={16} className="text-cyan-light" /> Evaluate with Sample Data
+            <Zap size={16} className="text-black" /> Evaluate with Sample Data
           </button>
           <button
             type="submit"
             disabled={isRunning}
-            className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg bg-cyan hover:bg-cyan-light text-black font-bold shadow-lg transition-all w-full sm:w-auto justify-center"
+            className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg bg-[#92d400] hover:bg-[#83be00] text-black font-bold shadow-md transition-all w-full sm:w-auto justify-center"
           >
             {isRunning ? (
               <>
-                <Loader2 size={16} className="animate-spin" /> Evaluating Proposal...
+                <Loader2 size={16} className="animate-spin text-black" /> Evaluating Proposal...
               </>
             ) : (
               <>
-                <Send size={16} /> Run Agentic Evaluation
+                <Send size={16} className="text-black" /> Run Agentic Evaluation
               </>
             )}
           </button>

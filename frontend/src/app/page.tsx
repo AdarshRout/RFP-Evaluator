@@ -25,8 +25,8 @@ export default function HomePage() {
           A 4-agent AI pipeline that extracts RFP requirements, semantically indexes proposals, scores compliance via RAG, and generates structured evaluation reports automatically.
         </p>
 
-        <Link href="/evaluate" className="btn-primary text-base px-6 py-3 flex items-center gap-2">
-          Launch Evaluation <ArrowRight size={16} />
+        <Link href="/evaluate" className="bg-[#92d400] hover:bg-[#83be00] text-black font-bold text-base px-6 py-3 rounded-lg flex items-center gap-2 transition-all shadow-md">
+          Launch Evaluation <ArrowRight size={16} className="text-black" />
         </Link>
       </section>
 
