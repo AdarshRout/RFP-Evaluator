@@ -1,6 +1,7 @@
 import json
 import re
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from langchain_core.prompts import ChatPromptTemplate
 from app.core.providers import get_llm
 from app.schemas.models import GraphState, ProposalScore, ScoringOutput
@@ -74,55 +75,57 @@ def _parse_score_from_text(text: str, fallback_evidence: str) -> ScoringOutput:
     raise ValueError(f"Could not parse score from LLM response: {text[:200]}")
 
 
+def _score_single(req, store, llm):
+    chunks = store.retrieve(req.description)
+    evidence = "\n---\n".join(chunks) if chunks else "No relevant content found in the proposal."
+    messages = _PROMPT.format_messages(
+        description=req.description,
+        category=req.category,
+        mandatory=req.mandatory,
+        evidence=evidence[:800],
+    )
+    try:
+        structured_llm = llm.with_structured_output(ScoringOutput, method="json_mode")
+        return req, structured_llm.invoke(messages), evidence
+    except Exception as e1:
+        logger.warning(f"[{req.id}] structured_output failed: {e1}. Trying raw JSON parse...")
+        try:
+            raw = llm.invoke(messages)
+            text = raw.content if hasattr(raw, "content") else str(raw)
+            return req, _parse_score_from_text(text, evidence), evidence
+        except Exception as e2:
+            logger.error(f"[{req.id}] Both scoring strategies failed. e1={e1}, e2={e2}")
+            return req, None, evidence
+
+
 def score_requirements_agent(state: GraphState) -> GraphState:
     llm = get_llm(temperature=0.0)
-
     session_id = f"{state.vendor_name}_{len(state.rfp_text)}"
     store = get_store(session_id)
     scores: list[ProposalScore] = []
 
-    for req in state.requirements:
-        chunks = store.retrieve(req.description)
-        evidence = "\n---\n".join(chunks) if chunks else "No relevant content found in the proposal."
-
-        messages = _PROMPT.format_messages(
-            description=req.description,
-            category=req.category,
-            mandatory=req.mandatory,
-            evidence=evidence[:800],  # 800 chars is enough for accurate scoring; 2000 wastes ~1200 tokens per call
-        )
-
-        # Strategy 1: Try with_structured_output (uses tool calling under the hood)
-        result: ScoringOutput | None = None
-        try:
-            structured_llm = llm.with_structured_output(ScoringOutput, method="json_mode")
-            result = structured_llm.invoke(messages)
-        except Exception as e1:
-            logger.warning(f"[{req.id}] structured_output failed: {e1}. Trying raw JSON parse...")
-
-            # Strategy 2: Call LLM directly and parse JSON from text
-            try:
-                raw_response = llm.invoke(messages)
-                raw_text = raw_response.content if hasattr(raw_response, "content") else str(raw_response)
-                result = _parse_score_from_text(raw_text, evidence)
-            except Exception as e2:
-                logger.error(f"[{req.id}] Both scoring strategies failed. e1={e1}, e2={e2}")
-
-        if result is not None:
-            scores.append(ProposalScore(
-                requirement_id=req.id,
-                score=max(0.0, min(10.0, result.score)),
-                justification=result.justification,
-                evidence=result.evidence,
-            ))
-        else:
-            # True last resort: neutral score with actual evidence
-            scores.append(ProposalScore(
-                requirement_id=req.id,
-                score=5.0,
-                justification="Unable to score automatically - manual review recommended.",
-                evidence=evidence[:800],
-            ))
+    with ThreadPoolExecutor(max_workers=5) as executor:  # Groq rate limit safe
+        futures = [
+            executor.submit(_score_single, req, store, llm)
+            for req in state.requirements
+        ]
+        for fut in futures:
+            req, result, evidence = fut.result()
+            if result is not None:
+                scores.append(ProposalScore(
+                    requirement_id=req.id,
+                    score=max(0.0, min(10.0, result.score)),
+                    justification=result.justification,
+                    evidence=result.evidence,
+                ))
+            else:
+                # True last resort: neutral score with actual evidence
+                scores.append(ProposalScore(
+                    requirement_id=req.id,
+                    score=5.0,
+                    justification="Unable to score automatically - manual review recommended.",
+                    evidence=evidence[:800],
+                ))
 
     return GraphState(
         **{**state.model_dump(),
