@@ -2,6 +2,7 @@ import time
 import logging
 from langchain_core.prompts import ChatPromptTemplate
 from app.core.providers import get_llm
+from app.core.config import get_settings
 from app.schemas.models import GraphState, EvaluationReport, RequirementMeta, ReportOutput
 
 logger = logging.getLogger(__name__)
@@ -11,8 +12,8 @@ _PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are a senior procurement consultant generating an executive evaluation report.
 
 Return JSON: {{
-  "strengths": ["string", ...],
-  "gaps": ["string", ...],
+  "strengths": [3-4 most important strings],
+  "gaps": [3-4 most important strings],
   "recommendation": "SHORTLIST | CONDITIONAL | REJECT - one sentence reason",
   "executive_summary": "3-4 sentence assessment"
 }}
@@ -36,7 +37,7 @@ def generate_report_agent(state: GraphState) -> GraphState:
     print(f"[REPORTER] Vendor: {state.vendor_name} | Scores to aggregate: {len(state.requirement_scores)}")
     t_start = time.perf_counter()
 
-    llm = get_llm(temperature=0.2)
+    llm = get_llm(temperature=0.2, max_tokens=get_settings().groq_report_max_tokens)
 
     # --- Score aggregation ---
     t_agg = time.perf_counter()

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.1-8b-instant"
     # Scoring/extraction responses are short JSON - 1024 is plenty, saves ~75% tokens vs 4096
     groq_max_tokens: int = 1024
+    groq_report_max_tokens: int = 2048 
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     hf_token: str | None = None
     chunk_size: int = 600
