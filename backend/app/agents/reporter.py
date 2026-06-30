@@ -1,6 +1,10 @@
+import time
+import logging
 from langchain_core.prompts import ChatPromptTemplate
 from app.core.providers import get_llm
 from app.schemas.models import GraphState, EvaluationReport, RequirementMeta, ReportOutput
+
+logger = logging.getLogger(__name__)
 
 
 _PROMPT = ChatPromptTemplate.from_messages([
@@ -28,9 +32,14 @@ Generate report:"""),
 
 
 def generate_report_agent(state: GraphState) -> GraphState:
-    llm = get_llm(temperature=0.2)
-    structured_llm = llm.with_structured_output(ReportOutput)
+    print(f"\n[REPORTER] ========== generate_report_agent START ==========")
+    print(f"[REPORTER] Vendor: {state.vendor_name} | Scores to aggregate: {len(state.requirement_scores)}")
+    t_start = time.perf_counter()
 
+    llm = get_llm(temperature=0.2)
+
+    # --- Score aggregation ---
+    t_agg = time.perf_counter()
     req_map = {r.id: r for r in state.requirements}
 
     weighted_total = weight_sum = 0.0
@@ -47,6 +56,10 @@ def generate_report_agent(state: GraphState) -> GraphState:
     overall = sum(ps.score for ps in state.requirement_scores) / len(state.requirement_scores) if state.requirement_scores else 0.0
     weighted = weighted_total / weight_sum if weight_sum > 0 else overall
     category_scores = {cat: round(sum(v) / len(v), 1) for cat, v in category_totals.items()}
+
+    print(f"[REPORTER] Score aggregation done in {time.perf_counter() - t_agg:.3f}s")
+    print(f"[REPORTER] Overall={overall:.2f}/10 | Weighted={weighted:.2f}/10")
+    print(f"[REPORTER] Category scores: {category_scores}")
 
     cat_str = "\n".join(f"  {k}: {v}/10" for k, v in category_scores.items())
     req_str = "\n".join(
@@ -65,7 +78,11 @@ def generate_report_agent(state: GraphState) -> GraphState:
         for r in state.requirements
     ]
 
+    # --- LLM call ---
+    t_llm = time.perf_counter()
+    print(f"[REPORTER] 🤖 Calling LLM (structured_output) to generate report narrative...")
     try:
+        structured_llm = llm.with_structured_output(ReportOutput)
         result: ReportOutput = structured_llm.invoke(
             _PROMPT.format_messages(
                 vendor_name=state.vendor_name,
@@ -75,6 +92,11 @@ def generate_report_agent(state: GraphState) -> GraphState:
                 req_summary=req_str,
             )
         )
+        elapsed_llm = time.perf_counter() - t_llm
+        print(f"[REPORTER] ✅ LLM report generation succeeded in {elapsed_llm:.2f}s")
+        print(f"[REPORTER] Recommendation: {result.recommendation}")
+        print(f"[REPORTER] Strengths: {len(result.strengths)} | Gaps: {len(result.gaps)}")
+
         report = EvaluationReport(
             vendor_name=state.vendor_name,
             total_score=round(overall, 2),
@@ -87,7 +109,12 @@ def generate_report_agent(state: GraphState) -> GraphState:
             recommendation=result.recommendation,
             executive_summary=result.executive_summary,
         )
-    except Exception:
+    except Exception as e:
+        elapsed_llm = time.perf_counter() - t_llm
+        print(f"[REPORTER] ❌ LLM FAILED after {elapsed_llm:.2f}s | error={e}")
+        print(f"[REPORTER] 🚨 FALLBACK: using rule-based report (no narrative analysis)")
+        logger.error(f"Reporter LLM failed: {e}")
+
         verdict = "SHORTLIST" if weighted >= 7.5 else "CONDITIONAL" if weighted >= 5.0 else "REJECT"
         report = EvaluationReport(
             vendor_name=state.vendor_name,
@@ -101,6 +128,10 @@ def generate_report_agent(state: GraphState) -> GraphState:
             recommendation=f"{verdict} - Automated evaluation completed",
             executive_summary=f"Automated evaluation completed. Weighted score: {weighted:.1f}/10.",
         )
+
+    print(f"[REPORTER] ========== generate_report_agent DONE ==========")
+    print(f"[REPORTER] Total time: {time.perf_counter() - t_start:.2f}s | Final verdict: {report.recommendation}")
+    print()
 
     return GraphState(
         **{**state.model_dump(),
